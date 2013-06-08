@@ -23,7 +23,7 @@ Use it in your clojure code:
 (defn logic []
 	(p :logic :start (do (method1) (method2))))
 	
-(Logic)	
+(logic)	
 ```
 
 Ouput log using `clojure.tools.logging`:
@@ -62,6 +62,11 @@ The `mean`,`max` and `min` value are in milliseconds.
 (p :method expr)
 ```
 If you don't provide `label`,the default label is `no-label`.Once you profile expression with a `label`,the nested invocation of `(p :method expr)` will use the thread-bound label.
+
+Disable profiling by set environment varibale `PROWL_PROFILE` to be false before startup program:
+```shell
+export PROWL_PROFILE=false
+```
 
 ## License
 
