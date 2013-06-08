@@ -23,7 +23,7 @@ Use it in your clojure code:
 (defn logic []
 	(p :logic :start (do (method1) (method2))))
 	
-(logic)	
+(Logic)	
 ```
 
 Ouput log using `clojure.tools.logging`:
@@ -33,7 +33,7 @@ Ouput log using `clojure.tools.logging`:
 [WARN] 06-08 21:27:58,487 [user] - [prowl-profiler] nREPL-worker-0 logic-1370698078328153000 start : 159.588  msecs
 ```
 
-Save the log in file `test.log`,download [parse.rb] to parse the log file:
+Save the log in file `test.log`,download [parse.rb](https://github.com/killme2008/prowl/blob/master/parse.rb) to parse the log file:
 ```
 ruby parse.rb  -f test.log
 ```
@@ -44,17 +44,17 @@ Parsing log file test.log ...
 Prowl profile results:
 Labels:
   Label:logic count:1
-    Method: method2                                            mean: 10.81      min: 10.81      max: 10.81      count: 1
-    Method: method1                                            mean: 145.90     min: 145.90     max: 145.90     count: 1
-    Method: start                                              mean: 159.59     min: 159.59     max: 159.59     count: 1
+    Method: method2                                        mean: 10.81      min: 10.81      max: 10.81      count: 1
+    Method: method1                                        mean: 145.90     min: 145.90     max: 145.90     count: 1
+    Method: start                                          mean: 159.59     min: 159.59     max: 159.59     count: 1
 
 Methods:
-  Method: method2                                            mean: 10.81      min: 10.81      max: 10.81      count: 1
-  Method: method1                                            mean: 145.90     min: 145.90     max: 145.90     count: 1
-  Method: start                                              mean: 159.59     min: 159.59     max: 159.59     count: 1
+  Method: method2                                        mean: 10.81      min: 10.81      max: 10.81      count: 1
+  Method: method1                                        mean: 145.90     min: 145.90     max: 145.90     count: 1
+  Method: start                                          mean: 159.59     min: 159.59     max: 159.59     count: 1
 ```
 
-`p` macro accept label name,method name and expression:
+`p` macro accepts label name,method name and expression:
 ```clojure
 (p :label :method expr)
 (p :method expr)
