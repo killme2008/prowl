@@ -1,0 +1,3 @@
+[WARN] 06-08 21:27:58,475 [user] - [prowl-profiler] nREPL-worker-0 logic-1370698078328153000 method1 : 145.903  msecs
+[WARN] 06-08 21:27:58,487 [user] - [prowl-profiler] nREPL-worker-0 logic-1370698078328153000 method2 : 10.807  msecs
+[WARN] 06-08 21:27:58,487 [user] - [prowl-profiler] nREPL-worker-0 logic-1370698078328153000 start : 159.588  msecs

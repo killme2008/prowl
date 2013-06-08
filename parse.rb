@@ -9,7 +9,6 @@ class ProfileLabel
     @timestamp = timestamp
     @methods = methods
     @count = count
-    @method_no = 0
   end
 
   def +(other)
@@ -27,8 +26,6 @@ class ProfileLabel
   end
 
   def add_method(method)
-    method.number = @method_no
-    @method_no = @method_no.succ
     if @methods[method.name].nil?
       @methods[method.name] = method
     else
@@ -38,20 +35,15 @@ class ProfileLabel
 
   def to_s
     rt = "Label:#{@label} count:#{@count}\r\n"
-    total_vals = @methods.values.inject(0){|sum,m| sum = sum + m.value}
-    @methods.sort_by{|_,v| v.number}.each do |_, method|
-      prop = method.value / total_vals * 100
-      prop = sprintf "%-10.2f", prop
-      prop = prop.rstrip!
-      prop << "%"
-      rt << "    " << method.format(prop) << "\r\n"
+    @methods.sort_by{|_,m| m.mean_value}.each do |_, method|
+      rt << "    " << method.to_s << "\r\n"
     end
     rt << "\r\n"
   end
 end
 
 class ProfileMethod
-  attr_accessor :name, :value, :count, :max, :min, :number
+  attr_accessor :name, :value, :count, :max, :min
 
   def initialize(name, value, count=1,  min=-1, max= -1)
     @name = name
@@ -67,7 +59,6 @@ class ProfileMethod
     min = @min < other.min ? @min : other.min
     max = @max < other.max ? other.max : @max
     new_method = ProfileMethod.new @name, @value + other.value, @count + other.count, min, max
-    new_method.number = other.number
     return new_method
   end
 
@@ -78,9 +69,6 @@ class ProfileMethod
   def to_s
     sprintf "Method: %-50s mean: %-10.2f min: %-10.2f max: %-10.2f count: %-10d", @name, mean_value, @min, @max, @count
   end
-  def format(prop)
-    sprintf "Method: %-50s mean: %-10.2f min: %-10.2f max: %-10.2f count: %-10d proportion: %-10s", @name, mean_value, @min, @max, @count, prop
-  end
 end
 
 class LogParser
@@ -90,20 +78,22 @@ class LogParser
     @methods = {}
   end
   def parse
-    current_labels = {}
+    thread_current_labels = {}
     File.open @opts[:file], "r" do |f|
       while !f.eof? and line = f.readline
-        if line =~ /\[prowl\-profiler\] (.*)\-(\d+) (.*) : (.*) msecs/
-          label = $1
-          timestamp = $2.to_i
-          method_name = $3
-          value = $4.to_f
+        if line =~ /\[prowl\-profiler\] (.*) (.*)\-(\d+) (.*) : (.*) msecs/
+          thread = $1
+          label = $2
+          timestamp = $3.to_i
+          method_name = $4
+          value = $5.to_f
           method = ProfileMethod.new method_name, value
-          exists_label = current_labels[label]
+          thread_current_labels[thread] ||= {}
+          exists_label = thread_current_labels[thread][label]
           if exists_label.nil?
             #If current label is nil,create one.
-            current_labels[label] = ProfileLabel.new label, timestamp
-            exists_label = current_labels[label]
+            thread_current_labels[thread][label] = ProfileLabel.new label, timestamp
+            exists_label = thread_current_labels[thread][label]
           else
             ##timestamp is changed,create a new label.
             if exists_label.timestamp != timestamp
@@ -112,8 +102,8 @@ class LogParser
               else
                 @labels[label] = exists_label
               end
-              current_labels[label] = ProfileLabel.new label, timestamp
-              exists_label = current_labels[label]
+              thread_current_labels[thread][label] = ProfileLabel.new label, timestamp
+              exists_label = thread_current_labels[thread][label]
             end
           end
           exists_label.add_method method
@@ -125,11 +115,13 @@ class LogParser
         end
       end
     end
-    current_labels.each do |label_name,label|
-      if @labels[label_name]
-        @labels[label_name] = @labels[label_name] + label
-      else
-        @labels[label_name] = label
+    thread_current_labels.each do |thread, labels|
+      labels.each do |label_name,label|
+        if @labels[label_name]
+          @labels[label_name] = @labels[label_name] + label
+        else
+          @labels[label_name] = label
+        end
       end
     end
   end
@@ -141,7 +133,8 @@ class LogParser
       rt << "  " << label.to_s
     end
     rt << "Methods:\r\n"
-    @methods.each do |_,method|
+    
+    @methods.sort_by{|_, m| m.mean_value}.each do |_,method|
       rt << "  " << method.to_s << "\r\n"
     end
     return rt

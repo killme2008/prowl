@@ -31,7 +31,7 @@
               start# (-now)]
           (try
             (let [ret# ~expr]
-              (log/warn "[prowl-profiler]" ts# (name ~method) ":" (/ (double (- (-now) start#)) 1000000.0) " msecs")
+              (log/warn "[prowl-profiler]" (.getName ^Thread (Thread/currentThread)) ts# (name ~method) ":" (/ (double (- (-now) start#)) 1000000.0) " msecs")
               ret#)
             (finally
              (when created#
