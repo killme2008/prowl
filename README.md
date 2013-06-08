@@ -54,6 +54,8 @@ Methods:
   Method: start                                          mean: 159.59     min: 159.59     max: 159.59     count: 1
 ```
 
+The `mean`,`max` and `min` value are in milliseconds.
+
 `p` macro accepts label name,method name and expression:
 ```clojure
 (p :label :method expr)
